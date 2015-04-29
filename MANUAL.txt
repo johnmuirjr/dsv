@@ -1,0 +1,81 @@
+Title: dsv Package Documentation
+Author: Jordan Vaughan
+Date: April 29, 2015
+Format: Plain text
+Encoding: UTF-8
+
+PACKAGE DOCUMENTATION
+
+package dsv
+    import "dsv"
+
+    Package dsv reads and writes delimiter-separated values (DSV) files.
+    Their format is described in detail in chapter five, “Textuality”, of
+    Eric Steven Raymond, “The Art of Unix Programming” (Boston: Addison-
+    Wesley), 2003.
+
+    A DSV file contains zero or more records consisting of one or more
+    fields per record. Each field within a record is separated by a single
+    character, which is usually the colon (':'). Records are separated from
+    each other by one or more consecutive newline characters ('\n'). Any
+    character (including separator characters and newlines) may be escaped
+    by prefixing it with a single reverse solidus ('\\'). Whitespace is
+    preserved within fields. The final record may be optionally followed by
+    one or more newline characters.
+
+TYPES
+
+type Reader struct {
+    Escape    rune // prefix for escaping characters
+    Separator rune // field delimiter/separator
+    // contains filtered or unexported fields
+}
+    A Reader reads records from a DSV file.
+
+    Readers returned by NewReader use reverse solidus characters ('\\') and
+    colon characters (':') as escape and record separator characters,
+    respectively. The Reader's exported fields can be modified to change
+    these settings.
+
+func NewReader(r io.RuneReader) *Reader
+    NewReader returns a new Reader that reads from r.
+
+func (r *Reader) Read() (fields []string, err error)
+    Read reads one record from r. The record is a slice of strings with each
+    string representing one field. err is nil if no errors occur or EOF is
+    reached. (EOF is not treated as an error.)
+
+func (r *Reader) ReadAll() (records [][]string, err error)
+    ReadAll reads all remaining records from r. Each record is a slice of
+    fields, one string per field. err is set to nil if no errors occur or
+    EOF is reached. (EOF is not treated as an error.)
+
+type Writer struct {
+    Escape    rune // prefix for escaping characters
+    Separator rune // field delimiter/separator
+    // contains filtered or unexported fields
+}
+    A Writer writes records to an io.Writer in DSV format.
+
+    Writers returned by NewWriter use reverse solidus characters ('\\') and
+    colon characters (':') as escape and record separator characters,
+    respectively. The Writer's exported fields can be modified to change
+    these settings.
+
+func NewWriter(w io.Writer) *Writer
+    NewWriter returns a Writer that writes to w.
+
+func (w *Writer) Error() error
+    Error reports any error that occurred during the last Flush or Write.
+
+func (w *Writer) Flush()
+    Flush writes buffered data to w's underlying io.Writer. Call Error to
+    check for errors.
+
+func (w *Writer) Write(record []string) (err error)
+    Write writes a single record to w. The record is a slice of strings
+    representing its fields, one string per field. Characters within the
+    fields are escaped as necessary.
+
+func (w *Writer) WriteAll(records [][]string) (err error)
+    WriteAll writes multiple records to w and calls Flush.
